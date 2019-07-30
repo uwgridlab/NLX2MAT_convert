@@ -1,0 +1,4 @@
+# File types that this Git repository will ignore
+*.mat
+*.txt
+*.ncs
