@@ -1,5 +1,5 @@
 # NLX2MAT_convert
-Converts Neuralynx data to useable .mat format using the (Neuralynx MATLAB converter)[https://neuralynx.com/software/category/matlab-netcom-utilities]
+Converts Neuralynx data to useable .mat format using the [Neuralynx MATLAB converter][https://neuralynx.com/software/category/matlab-netcom-utilities]
 
 Primary function: NLX2MAT_convert.m
 Options in function: 
