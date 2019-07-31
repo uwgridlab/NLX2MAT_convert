@@ -8,9 +8,6 @@
 % data              512 x samples of data (what does the 512 do)
 % header            recording information
 
-% TODO: need to deal with non-continuous data, right now the time vector
-% assumes continuous data stream 
-
 function NLX2MAT_convert
 
 tic 
