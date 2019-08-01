@@ -9,6 +9,8 @@
 % header            recording information
 
 function NLX2MAT_convert
+addpath('C:\Users\sunh20\Documents\Projects\NLX2MAT_convert\MatlabImportExport_v6.0.0')
+addpath('C:\Users\sunh20\Documents\Projects\NLX2MAT_convert\natsortfiles')
 
 tic 
 
@@ -19,36 +21,47 @@ plot_on = 0; % will pause after every file
 % get data directory - convert everything in this folder
 datapath = uigetdir(pwd,'select NLX data folder');
 outpath = uigetdir(pwd, 'select an output directory for MAT file');
-file_list = dir(fullfile(datapath, '*.ncs'));
-num_files = length(file_list);
+chans = dir(fullfile(datapath, '*.ncs'));
+chans = natsortfiles(extractfield(chans,'name'));
+num_files = length(chans);
 
-% setup data structs
-NLX_data = struct;
+% setup data 
+NLX_data = {};
+chans_fs = [];
+t_start = [];
 
 % for all files in directory 
 for idx = 1:num_files
     % get names
-    chan = file_list(idx).name;
-    chan = split(chan,'.');
-    chan = chan{1};
+    ch = chans{idx};
+    ch = split(ch,'.');
+    ch = ch{1};
+    chans{idx} = ch;
     
-    filename = strcat(datapath,'\',file_list(idx).name);
-    NLX_data(idx).name = chan;
+    filename = strcat(datapath,'\',chans{idx},'.ncs');
+
     
     % convert data
-    [t_stamps, chans, fs, n_valid_samples, data, header] = Nlx2MatCSC(filename,[1 1 1 1 1], 1, 1, [] );
+    [t_stamps, ~, fs, ~, data, header] = Nlx2MatCSC(filename,[1 1 1 1 1], 1, 1, [] );
+    
+    % if first time in loop, setup proper matrix sizes
+    if idx == 1
+        NLX_data = cell(1,num_files);
+        chans_fs = zeros(1,num_files);
+        t_start = zeros(1,num_files);
+    end
     
     % convert data from ADC to voltage
     v_convert = split(header{17,1},' ');
     v_convert = str2double(v_convert{2});
     ECOG = data.* v_convert;
-    ECOG = reshape(ECOG,[1 size(data,1)*size(data,2)]);
+    NLX_data{idx} = reshape(ECOG,[1 size(data,1)*size(data,2)]);
 
     % modify data so it's useable
-    fs = fs(1);
+    chans_fs(idx) = fs(1); 
     t_stamps = t_stamps / 1e6; % convert to seconds
-    t_start = t_stamps(1);
-    t = 1/fs:1/fs:length(ECOG)/fs;
+    t_start(idx) = t_stamps(1);
+    % t = 1/fs:1/fs:length(ECOG)/fs;
 
     % plot data
     if plot_on == 1
@@ -56,26 +69,26 @@ for idx = 1:num_files
         plot(t,ECOG.*1e3)
         xlabel('time (s)')
         ylabel('voltage (mV)')
-        title(sprintf('%s',chan))
+        title(sprintf('%s',ch))
         pause
     end
 
     % save data to struct
-    NLX_data(idx).fs = fs;
-    NLX_data(idx).header = header;
-    NLX_data(idx).t = t;
-    NLX_data(idx).t_start = t_start;
-    NLX_data(idx).ECOG = ECOG;
+%     NLX_data(idx).fs = fs;
+%     NLX_data(idx).header = header;
+%     NLX_data(idx).t = t;
+%     NLX_data(idx).t_start = t_start;
+%     NLX_data(idx).ECOG = ECOG;
     
-    fprintf('Successfully saved %s\n',chan)
+    fprintf('Successfully converted %s\n',ch)
 end
 
 % save data to file
-
+disp('Saving to file...')
 if save_on == 1
     out_name = split(datapath,'\');
     outpath_name = strcat(outpath,'\',out_name{end},'.mat');
-    save(outpath_name,'NLX_data','-v7.3')
+    save(outpath_name,'NLX_data','chans','chans_fs','t_start','-v7.3')
     fprintf('Finished in %.2f seconds\n',toc)
 end
 
