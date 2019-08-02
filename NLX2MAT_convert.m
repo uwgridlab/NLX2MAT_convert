@@ -9,8 +9,8 @@
 % header            recording information
 
 function NLX2MAT_convert
-addpath('C:\Users\sunh20\Documents\Projects\NLX2MAT_convert\MatlabImportExport_v6.0.0')
-addpath('C:\Users\sunh20\Documents\Projects\NLX2MAT_convert\natsortfiles')
+addpath('MatlabImportExport_v6.0.0')
+addpath('natsortfiles')
 
 tic 
 
